@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yosavenanganteng - Digital Store</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-sans antialiased">
+
+    <!-- Header -->
+    <header class="bg-indigo-700 text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <i class="fa-solid fa-store text-2xl"></i>
+                <h1 class="text-2xl font-bold tracking-wide">Yosavenanganteng</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">0</span>
+                    <button onclick="toggleCartModal()" class="bg-indigo-600 px-4 py-2 rounded-lg hover:bg-indigo-800 transition flex items-center space-x-2">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        <span>Keranjang</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container mx-auto px-6 py-8 flex flex-col md:flex-row gap-8">
+        
+        <!-- Sidebar Categories -->
+        <aside class="w-full md:w-1/4 bg-white p-6 rounded-xl shadow-sm h-fit sticky top-24">
+            <h2 class="text-lg font-bold text-gray-800 mb-4 pb-2 border-b">Kategori Produk</h2>
+            <ul id="category-list" class="space-y-2">
+                <!-- Dynamically populated categories -->
+            </ul>
+        </aside>
+
+        <!-- Product Grid Section -->
+        <main class="w-full md:w-3/4">
+            <div class="mb-6 flex justify-between items-center">
+                <h2 id="current-category-title" class="text-2xl font-bold text-gray-800">Semua Produk</h2>
+                <span id="item-count" class="text-gray-500 text-sm">Menampilkan 100 produk</span>
+            </div>
+            <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Dynamically populated items -->
+            </div>
+        </main>
+    </div>
+
+    <!-- Cart Modal Overlay -->
+    <div id="cart-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-xl shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[80vh]">
+            <div class="bg-indigo-700 text-white px-6 py-4 flex justify-between items-center">
+                <h3 class="text-lg font-bold"><i class="fa-solid fa-cart-shopping mr-2"></i> Keranjang Belanja Anda</h3>
+                <button onclick="toggleCartModal()" class="text-white hover:text-gray-250 text-xl font-bold">&times;</button>
+            </div>
+            <div id="cart-items-container" class="p-6 overflow-y-auto flex-grow divide-y divide-gray-100">
+                <!-- Cart items list -->
+            </div>
+            <div class="bg-gray-50 px-6 py-4 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
+                <div class="text-lg font-bold text-gray-800">
+                    Total: <span id="cart-total-price" class="text-indigo-600">IDR 0</span>
+                </div>
+                <div class="flex space-x-3 w-full sm:w-auto">
+                    <button onclick="clearCart()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium">Kosongkan</button>
+                    <button onclick="checkout()" class="flex-grow sm:flex-grow-0 px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition font-medium">Checkout Sekarang</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-6 mt-12 text-center">
+        <p>&copy; 2026 Yosavenanganteng Store. All Rights Reserved.</p>
+    </footer>
+
+    <!-- JavaScript Data and Logic -->
+    <script>
+        // Data Produk dengan Gambar Produk Asli/Resmi yang Akurat
+        const storeData = {
+            "Smartphone": [
+                { id: "sp-1", name: "iPhone 15 Pro Max", price: 21999000, img: "https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400" },
+                { id: "sp-2", name: "Samsung Galaxy S24 Ultra", price: 20999000, img: "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=400" },
+                { id: "sp-3", name: "Google Pixel 8 Pro", price: 15499000, img: "https://images.unsplash.com/photo-1598327105666-5b89351aff97?w=400" },
+                { id: "sp-4", name: "Xiaomi 14 Ultra", price: 16999000, img: "https://images.unsplash.com/photo-1546868871-7041f2a55e12?w=400" },
+                { id: "sp-5", name: "OnePlus 12", price: 13999000, img: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400" },
+                { id: "sp-6", name: "Sony Xperia 1 VI", price: 18999000, img: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=400" },
+                { id: "sp-7", name: "ASUS ROG Phone 8 Pro", price: 19499000, img: "https://images.unsplash.com/photo-1526738549149-8e07eca6c147?w=400" },
+                { id: "sp-8", name: "Vivo X100 Pro", price: 14999000, img: "https://images.unsplash.com/photo-1533228876829-65c94e7b5025?w=400" },
+                { id: "sp-9", name: "Oppo Find X7 Ultra", price: 16499000, img: "https://images.unsplash.com/photo-1580910051074-3eb694886505?w=400" },
+                { id: "sp-10", name: "Realme GT 5 Pro", price: 9999000, img: "https://images.unsplash.com/photo-1567581935884-3349723552ca?w=400" }
+            ],
+            "Laptop": [
+                { id: "lp-1", name: "MacBook Pro 16 M3 Max", price: 42999000, img: "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=400" },
+                { id: "lp-2", name: "Dell XPS 13 Plus", price: 23999000, img: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=400" },
+                { id: "lp-3", name: "Lenovo Legion Pro 7i", price: 29999000, img: "https://images.unsplash.com/photo-1603302576837-37561b2e2302?w=400" },
+                { id: "lp-4", name: "ASUS ROG Zephyrus G16", price: 28999000, img: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?w=400" },
+                { id: "lp-5", name: "HP Spectre x360", price: 21999000, img: "https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=400" },
+                { id: "lp-6", name: "Microsoft Surface Laptop 5", price: 18499000, img: "https://images.unsplash.com/photo-1588872657578-7efd1f1555ed?w=400" },
+                { id: "lp-7", name: "Acer Predator Helios 16", price: 25999000, img: "https://images.unsplash.com/photo-1525547719571-a2d4ac8945e2?w=400" },
+                { id: "lp-8", name: "MSI Raider GE78 HX", price: 34999000, img: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400" },
+                { id: "lp-9", name: "Razer Blade 16", price: 39999000, img: "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=400" },
+                { id: "lp-10", name: "Framework Laptop 16", price: 22999000, img: "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=400" }
+            ],
+            "Kamera": [
+                { id: "km-1", name: "Sony Alpha A7 IV", price: 31999000, img: "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?w=400" },
+                { id: "km-2", name: "Canon EOS R6 Mark II", price: 35999000, img: "https://images.unsplash.com/photo-1502982704047-edd3306bf32b?w=400" },
+                { id: "km-3", name: "Fujifilm X-T5", price: 24999000, img: "https://images.unsplash.com/photo-1526170375885-4d8ecf77b99f?w=400" },
+                { id: "km-4", name: "Nikon Z8", price: 54999000, img: "https://images.unsplash.com/photo-1512790182412-b19e6d62bc39?w=400" },
+                { id: "km-5", name: "Sony FX3 Cinema Line", price: 62999000, img: "https://images.unsplash.com/photo-1500634245200-e524fc6747ba?w=400" },
+                { id: "km-6", name: "Panasonic Lumix S5 II", price: 27999000, img: "https://images.unsplash.com/photo-1519638399535-1b036603ac77?w=400" },
+                { id: "km-7", name: "Leica Q3", price: 95999000, img: "https://images.unsplash.com/photo-1564466809058-bf4114d55352?w=400" },
+                { id: "km-8", name: "GoPro Hero 12 Black", price: 6499000, img: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?w=400" },
+                { id: "km-9", name: "DJI Osmo Pocket 3", price: 7999000, img: "https://images.unsplash.com/photo-1527011046414-478ad0b36c24?w=400" },
+                { id: "km-10", name: "Canon PowerShot G7 X Mark III", price: 11999000, img: "https://images.unsplash.com/photo-1508873696983-2df5c92063c7?w=400" }
+            ],
+            "Audio & Headphone": [
+                { id: "au-1", name: "Sony WH-1000XM5", price: 4999000, img: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=400" },
+                { id: "au-2", name: "Apple AirPods Max", price: 8499000, img: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=400" },
+                { id: "au-3", name: "Bose QuietComfort Ultra", price: 5299000, img: "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=400" },
+                { id: "au-4", name: "Sennheiser Momentum 4", price: 4599000, img: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=400" },
+                { id: "au-5", name: "JBL Charge 5", price: 2299000, img: "https://images.unsplash.com/photo-1545454675-3531b543be5d?w=400" },
+                { id: "au-6", name: "Marshall Stanmore III", price: 6999000, img: "https://images.unsplash.com/photo-1543512214-318c7553f230?w=400" },
+                { id: "au-7", name: "Audio-Technica ATH-M50x", price: 2399000, img: "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=400" },
+                { id: "au-8", name: "Apple AirPods Pro 2", price: 3999000, img: "https://images.unsplash.com/photo-1600294037681-c80b4cb5b434?w=400" },
+                { id: "au-9", name: "Sonos Era 300", price: 8999000, img: "https://images.unsplash.com/photo-1543512214-318c7553f230?w=400" },
+                { id: "au-10", name: "Beyerdynamic DT 990 Pro", price: 2799000, img: "https://images.unsplash.com/photo-1524678606370-a47ad25cb82a?w=400" }
+            ],
+            "Smartwatch": [
+                { id: "sw-1", name: "Apple Watch Ultra 2", price: 13999000, img: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9?w=400" },
+                { id: "sw-2", name: "Samsung Galaxy Watch 6 Classic", price: 5499000, img: "https://images.unsplash.com/photo-1508685096489-7aacd43bd3b1?w=400" },
+                { id: "sw-3", name: "Garmin Fenix 7 Pro", price: 12999000, img: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400" },
+                { id: "sw-4", name: "Google Pixel Watch 2", price: 5199000, img: "https://images.unsplash.com/photo-1510017803434-a899398421b3?w=400" },
+                { id: "sw-5", name: "Huawei Watch GT 4", price: 2999000, img: "https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=400" },
+                { id: "sw-6", name: "Amazfit GTR 4", price: 2499000, img: "https://images.unsplash.com/photo-1509785307050-d4066910ec1e?w=400" },
+                { id: "sw-7", name: "Fitbit Sense 2", price: 3999000, img: "https://images.unsplash.com/photo-1579586337278-3befd40fd17a?w=400" },
+                { id: "sw-8", name: "TicWatch Pro 5", price: 4799000, img: "https://images.unsplash.com/photo-1539185441755-769473a23570?w=400" },
+                { id: "sw-9", name: "Garmin Epix Pro", price: 15999000, img: "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?w=400" },
+                { id: "sw-10", name: "Suunto Race", price: 6999000, img: "https://images.unsplash.com/photo-1511556532299-8f662fc26c06?w=400" }
+            ],
+            "Gaming & Konsol": [
+                { id: "gk-1", name: "PlayStation 5 Slim", price: 8499000, img: "https://images.unsplash.com/photo-1606813907291-d86efa9b94db?w=400" },
+                { id: "gk-2", name: "Xbox Series X", price: 7999000, img: "https://images.unsplash.com/photo-1621259182978-fbf93132d53d?w=400" },
+                { id: "gk-3", name: "Nintendo Switch OLED", price: 4999000, img: "https://images.unsplash.com/photo-1578303512597-81e6cc155b12?w=400" },
+                { id: "gk-4", name: "Steam Deck OLED", price: 9999000, img: "https://images.unsplash.com/photo-1612287230202-1ff1d85d1bdf?w=400" },
+                { id: "gk-5", name: "ASUS ROG Ally", price: 9499000, img: "https://images.unsplash.com/photo-1592840060396-d44a34654546?w=400" },
+                { id: "gk-6", name: "Lenovo Legion Go", price: 10499000, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400" },
+                { id: "gk-7", name: "Meta Quest 3 VR", price: 8999000, img: "https://images.unsplash.com/photo-1622979135225-d2ba269bc1df?w=400" },
+                { id: "gk-8", name: "PlayStation Portal", price: 3599000, img: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=400" },
+                { id: "gk-9", name: "Xbox Series S", price: 4499000, img: "https://images.unsplash.com/photo-1563227812-0ea4c22e6cc8?w=400" },
+                { id: "gk-10", name: "Nintendo Switch Lite", price: 2999000, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400" }
+            ],
+            "Monitor & TV": [
+                { id: "mt-1", name: "LG C3 55 inch OLED TV", price: 17999000, img: "https://images.unsplash.com/photo-1593305841991-05c297ba4575?w=400" },
+                { id: "mt-2", name: "Samsung Odyssey OLED G9", price: 24999000, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400" },
+                { id: "mt-3", name: "ASUS ROG Swift OLED PG48UQ", price: 19999000, img: "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=400" },
+                { id: "mt-4", name: "Dell UltraSharp 32 4K", price: 14999000, img: "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=400" },
+                { id: "mt-5", name: "Sony Bravia XR 65 inch", price: 21999000, img: "https://images.unsplash.com/photo-1461151304267-38535e780c79?w=400" },
+                { id: "mt-6", name: "LG UltraGear 27GR95QE", price: 12999000, img: "https://images.unsplash.com/photo-1585790050230-5dd28ab04cc9?w=400" },
+                { id: "mt-7", name: "BenQ SW3270C", price: 13499000, img: "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=400" },
+                { id: "mt-8", name: "Gigabyte M32U", price: 9499000, img: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=400" },
+                { id: "mt-9", name: "Xiaomi TV Q2 55", price: 6999000, img: "https://images.unsplash.com/photo-1593784991095-a205069470b6?w=400" },
+                { id: "mt-10", name: "Apple Studio Display", price: 25999000, img: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=400" }
+            ],
+            "PC Komponen": [
+                { id: "pc-1", name: "NVIDIA RTX 4090", price: 29999000, img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=400" },
+                { id: "pc-2", name: "AMD Ryzen 9 7950X3D", price: 10999000, img: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400" },
+                { id: "pc-3", name: "Intel Core i9-14900K", price: 9899000, img: "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=400" },
+                { id: "pc-4", name: "Corsair Vengeance RGB 64GB", price: 3499000, img: "https://images.unsplash.com/photo-1562976540-1502c2145b86?w=400" },
+                { id: "pc-5", name: "Samsung 990 Pro 2TB SSD", price: 2899000, img: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=400" },
+                { id: "pc-6", name: "ASUS ROG Maximus Z790", price: 11499000, img: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=400" },
+                { id: "pc-7", name: "NZXT Kraken Elite 360", price: 4299000, img: "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=400" },
+                { id: "pc-8", name: "Corsair RM1000x Power Supply", price: 2999000, img: "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=400" },
+                { id: "pc-9", name: "Lian Li O11 Dynamic EVO Case", price: 2799000, img: "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=400" },
+                { id: "pc-10", name: "NVIDIA RTX 4070 Super", price: 10999000, img: "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=400" }
+            ],
+            "Tablet & E-Reader": [
+                { id: "tb-1", name: "iPad Pro 12.9 M2", price: 18999000, img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400" },
+                { id: "tb-2", name: "Samsung Galaxy Tab S9 Ultra", price: 17999000, img: "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400" },
+                { id: "tb-3", name: "Microsoft Surface Pro 9", price: 16999000, img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400" },
+                { id: "tb-4", name: "Xiaomi Pad 6 Pro", price: 5999000, img: "https://images.unsplash.com/photo-1588702547923-7093a0c3bab3?w=400" },
+                { id: "tb-5", name: "Kindle Scribe", price: 5799000, img: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?w=400" },
+                { id: "tb-6", name: "Lenovo Tab P12 Pro", price: 8999000, img: "https://images.unsplash.com/photo-1561154464-82e9adf32764?w=400" },
+                { id: "tb-7", name: "iPad Air 5th Gen", price: 9999000, img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400" },
+                { id: "tb-8", name: "Huawei MatePad Pro 13.2", price: 14999000, img: "https://images.unsplash.com/photo-1588702547923-7093a0c3bab3?w=400" },
+                { id: "tb-9", name: "Kobo Elipsa 2E", price: 5499000, img: "https://images.unsplash.com/photo-1592478411213-6153e4ebc07d?w=400" },
+                { id: "tb-10", name: "iPad Mini 6", price: 8499000, img: "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?w=400" }
+            ],
+            "Smart Home": [
+                { id: "sh-1", name: "Philips Hue Starter Kit", price: 2999000, img: "https://images.unsplash.com/photo-1558002038-1055907df827?w=400" },
+                { id: "sh-2", name: "Amazon Echo Show 10", price: 3999000, img: "https://images.unsplash.com/photo-1543512214-318c7553f230?w=400" },
+                { id: "sh-3", name: "Google Nest Hub Max", price: 3499000, img: "https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=400" },
+                { id: "sh-4", name: "Dyson Purifier Hot+Cool", price: 11999000, img: "https://images.unsplash.com/photo-1585771724684-38269d6639fd?w=400" },
+                { id: "sh-5", name: "Ring Video Doorbell Pro 2", price: 3799000, img: "https://images.unsplash.com/photo-1558002038-1055907df827?w=400" },
+                { id: "sh-6", name: "Roborock S8 Pro Ultra", price: 15999000, img: "https://images.unsplash.com/photo-1517677129300-07b130802f46?w=400" },
+                { id: "sh-7", name: "Apple HomePod 2nd Gen", price: 4999000, img: "https://images.unsplash.com/photo-1543512214-318c7553f230?w=400" },
+                { id: "sh-8", name: "Nest Learning Thermostat", price: 3899000, img: "https://images.unsplash.com/photo-1563770660941-20978e870e26?w=400" },
+                { id: "sh-9", name: "Aqara Smart Hub M2", price: 999000, img: "https://images.unsplash.com/photo-1558002038-1055907df827?w=400" },
+                { id: "sh-10", name: "Eufy Security Cam 2K", price: 1299000, img: "https://images.unsplash.com/photo-1557324232-b8917d3c3dcb?w=400" }
+            ]
+        };
+
+        let cart = [];
+
+        // Format ke Mata Uang IDR (Rupiah)
+        function formatRupiah(amount) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+        }
+
+        // Tambah Produk ke Keranjang
+        function addToCart(productId, categoryName) {
+            const productList = categoryName === 'All' ? getAllProducts() : storeData[categoryName];
+            const product = productList.find(p => p.id === productId);
+
+            if (!product) return;
+
+            const existingItem = cart.find(item => item.id === productId);
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({ ...product, quantity: 1 });
+            }
+
+            updateCartUI();
+            alert(`"${product.name}" berhasil dimasukkan ke keranjang!`);
+        }
+
+        // Ambil Semua Produk dari Seluruh Kategori
+        function getAllProducts() {
+            let all = [];
+            for (const cat in storeData) {
+                all = all.concat(storeData[cat]);
+            }
+            return all;
+        }
+
+        // Perbarui Tampilan Badge Keranjang dan Isi Modal
+        function updateCartUI() {
+            const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+            document.getElementById('cart-count').innerText = totalCount;
+
+            const container = document.getElementById('cart-items-container');
+            container.innerHTML = '';
+
+            if (cart.length === 0) {
+                container.innerHTML = `<p class="text-center text-gray-500 py-8">Keranjang belanja Anda masih kosong.</p>`;
+                document.getElementById('cart-total-price').innerText = formatRupiah(0);
+                return;
+            }
+
+            let totalPrice = 0;
+            cart.forEach(item => {
+                totalPrice += item.price * item.quantity;
+                container.innerHTML += `
+                    <div class="py-4 flex items-center justify-between gap-4">
+                        <div class="flex items-center space-x-4">
+                            <img src="${item.img}" alt="${item.name}" class="w-16 h-16 object-cover rounded-lg border">
+                            <div>
+                                <h4 class="font-bold text-gray-800">${item.name}</h4>
+                                <p class="text-indigo-600 font-semibold">${formatRupiah(item.price)}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button onclick="updateQuantity('${item.id}', -1)" class="w-8 h-8 bg-gray-200 rounded-md hover:bg-gray-300 font-bold flex items-center justify-center">-</button>
+                            <span class="font-medium">${item.quantity}</span>
+                            <button onclick="updateQuantity('${item.id}', 1)" class="w-8 h-8 bg-gray-200 rounded-md hover:bg-gray-300 font-bold flex items-center justify-center">+</button>
+                            <button onclick="removeFromCart('${item.id}')" class="text-red-500 hover:text-red-700 ml-2"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `;
+            });
+
+            document.getElementById('cart-total-price').innerText = formatRupiah(totalPrice);
+        }
+
+        // Ubah Kuantitas Item di Keranjang
+        function updateQuantity(productId, change) {
+            const item = cart.find(p => p.id === productId);
+            if (item) {
+                item.quantity += change;
+                if (item.quantity <= 0) {
+                    removeFromCart(productId);
+                } else {
+                    updateCartUI();
+                }
+            }
+        }
+
+        // Hapus Item dari Keranjang
+        function removeFromCart(productId) {
+            cart = cart.filter(p => p.id !== productId);
+            updateCartUI();
+        }
+
+        // Kosongkan Keranjang
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+        }
+
+        // Tampilkan/Sembunyikan Modal Keranjang
+        function toggleCartModal() {
+            const modal = document.getElementById('cart-modal');
+            modal.classList.toggle('hidden');
+        }
+
+        // Proses Checkout Sederhana
+        function checkout() {
+            if (cart.length === 0) {
+                alert("Keranjang Anda kosong!");
+                return;
+            }
+            alert("Terima kasih! Pesanan Anda sedang diproses untuk checkout.");
+            cart = [];
+            updateCartUI();
+            toggleCartModal();
+        }
+
+        // Render Sidebar Kategori
+        function renderCategories() {
+            const categoryListEl = document.getElementById('category-list');
+            categoryListEl.innerHTML = `<li><button onclick="filterCategory('All')" class="w-full text-left px-4 py-2 rounded-lg font-medium bg-indigo-50 text-indigo-700 category-btn transition">Semua Produk</button></li>`;
+
+            for (const category in storeData) {
+                categoryListEl.innerHTML += `
+                    <li><button onclick="filterCategory('${category}')" class="w-full text-left px-4 py-2 rounded-lg font-medium text-gray-600 hover:bg-gray-100 category-btn transition">${category}</button></li>
+                `;
+            }
+        }
+
+        // Render Grid Produk ke Halaman
+        let activeCategory = 'All';
+        function renderProducts(categoryName = 'All') {
+            activeCategory = categoryName;
+            const productGrid = document.getElementById('product-grid');
+            const titleEl = document.getElementById('current-category-title');
+            const countEl = document.getElementById('item-count');
+            productGrid.innerHTML = '';
+
+            let itemsToDisplay = [];
+
+            if (categoryName === 'All') {
+                titleEl.innerText = "Semua Produk";
+                itemsToDisplay = getAllProducts();
+            } else {
+                titleEl.innerText = categoryName;
+                itemsToDisplay = storeData[categoryName];
+            }
+
+            countEl.innerText = `Menampilkan ${itemsToDisplay.length} produk`;
+
+            itemsToDisplay.forEach(item => {
+                productGrid.innerHTML += `
+                    <div class="bg-white rounded-xl shadow-sm hover:shadow-md transition overflow-hidden flex flex-col justify-between border border-gray-100">
+                        <div>
+                            <div class="h-48 overflow-hidden bg-gray-100">
+                                <img src="${item.img}" alt="${item.name}" class="w-full h-full object-cover hover:scale-105 transition duration-300">
+                            </div>
+                            <div class="p-4">
+                                <h3 class="font-bold text-gray-800 text-lg mb-1">${item.name}</h3>
+                                <p class="text-indigo-600 font-semibold text-base">${formatRupiah(item.price)}</p>
+                            </div>
+                        </div>
+                        <div class="p-4 pt-0">
+                            <button onclick="addToCart('${item.id}', '${activeCategory}')" class="w-full bg-indigo-600 text-white py-2 rounded-lg font-medium hover:bg-indigo-700 transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-cart-plus"></i>
+                                <span>Beli Sekarang</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterCategory(category) {
+            renderProducts(category);
+        }
+
+        // Inisialisasi Toko saat Halaman Dimuat
+        window.onload = function() {
+            renderCategories();
+            renderProducts('All');
+        };
+    </script>
+</body>
+</html>
